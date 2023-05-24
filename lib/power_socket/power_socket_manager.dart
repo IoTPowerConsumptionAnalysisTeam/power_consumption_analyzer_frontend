@@ -5,7 +5,7 @@ import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_ca
 
 class PowerSocketManager {
   // ignore: non_constant_identifier_names
-  static Future<PowerSocketManager> get I async {
+  static PowerSocketManager get I {
     return GetIt.I<PowerSocketManager>();
   }
 
@@ -63,7 +63,7 @@ class PowerSocketManager {
     return _powerSocketMap[id]!;
   }
 
-  List<PowerSocket> getPowerSocketByCategory(String categoryName) {
+  List<PowerSocket> getPowerSocketsByCategory(String categoryName) {
     return _powerSocketMap.values
         .where((powerSocket) => powerSocket.category.name == categoryName)
         .toList();

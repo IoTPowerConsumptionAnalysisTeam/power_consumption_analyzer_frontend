@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:power_consumption_analyzer_frontend/login.dart';
+import 'package:power_consumption_analyzer_frontend/power_socket/power_socket.dart';
+import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category.dart';
+import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category_manager.dart';
+import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_manager.dart';
 
 void main() {
+  GetIt.I.registerSingleton<PowerSocketCategoryManager>(
+      PowerSocketCategoryManager());
+  GetIt.I.registerSingleton<PowerSocketManager>(PowerSocketManager());
   runApp(const MyApp());
 }
 
@@ -81,11 +89,16 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _widgetOptions = <Widget>[
-      ListView.builder(
-        itemCount: dataList.length,
-        itemBuilder: (context, index) {
-          Menu menu = Menu.fromJson(dataList[index]);
-          return _buildList(menu);
+      FutureBuilder(
+        future: PowerSocketCategoryManager.I.fetchAllCategory(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return _buildPowerSocketList();
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
         },
       ),
       Container(
@@ -207,25 +220,72 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildList(Menu list) {
-    if (list.subMenu.isEmpty) {
-      return Builder(builder: (context) {
-        return ListTile(
-            // onTap: () => Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //         builder: (context) => SubCategory(list.name))),
-            leading: const SizedBox(),
-            title: Text(list.name));
-      });
-    }
+  Widget _buildPowerSocketList() {
+    return ListView.builder(
+      itemCount: PowerSocketCategoryManager.I.getAllCategory().length,
+      itemBuilder: (context, index) {
+        String categoryName =
+            PowerSocketCategoryManager.I.getAllCategoryList()[index].name;
+        return _buildExpansionTile(categoryName);
+      },
+    );
+  }
+
+  // Future<Widget> _buildList() async {
+  //   Map<String, PowerSocketCategory> powerSocketCategoryMap =
+  //       await PowerSocketCategoryManager.I.fetchAllCategory();
+  //   for (String categoryName in powerSocketCategoryMap.keys) {
+  //     await PowerSocketManager.I.fetchAllPowerSocket();
+  //     List<PowerSocket> powerSockets =
+  //         PowerSocketManager.I.getPowerSocketsByCategory(categoryName);
+  //     if (powerSockets.length > 0) {
+  //       return _buildExpansionTile(categoryName, powerSockets);
+  //     }
+  //   }
+  //   if (list.subMenu.isEmpty) {
+  //     return Builder(builder: (context) {
+  //       return ListTile(
+  //           // onTap: () => Navigator.push(
+  //           //     context,
+  //           //     MaterialPageRoute(
+  //           //         builder: (context) => SubCategory(list.name))),
+  //           leading: const SizedBox(),
+  //           title: Text(list.name));
+  //     });
+  //   }
+  //   return ExpansionTile(
+  //     leading: Icon(list.icon),
+  //     title: Text(
+  //       list.name,
+  //       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //     ),
+  //     children: list.subMenu.map(_buildList).toList(),
+  //   );
+  // }
+
+  ExpansionTile _buildExpansionTile(String categoryName) {
+    List<PowerSocket> powerSockets =
+        PowerSocketManager.I.getPowerSocketsByCategory(categoryName);
     return ExpansionTile(
-      leading: Icon(list.icon),
+      controlAffinity: ListTileControlAffinity.leading,
       title: Text(
-        list.name,
+        categoryName,
         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
-      children: list.subMenu.map(_buildList).toList(),
+      children: powerSockets.map(_buildListTile).toList(),
+    );
+  }
+
+  ListTile _buildListTile(PowerSocket powerSocket) {
+    return ListTile(
+      // onTap: () => Navigator.push(
+      //     context,
+      //     MaterialPageRoute(
+      //         builder: (context) => PowerSocketDetail(powerSocket))),
+      leading: const SizedBox(),
+      title: Text(powerSocket.name ?? 'Unknown'),
+      // trailing: Text(powerSocket.power.toString()),
+      trailing: Text('0.00 W'),
     );
   }
 }

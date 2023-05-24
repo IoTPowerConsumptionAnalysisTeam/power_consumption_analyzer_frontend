@@ -27,6 +27,10 @@ class PowerSocketCategoryManager {
     return Map.unmodifiable(_categoryMap);
   }
 
+  List<PowerSocketCategory> getAllCategoryList() {
+    return _categoryMap.values.toList();
+  }
+
   PowerSocketCategory getCategoryByName(String name) {
     if (_categoryMap[name] == null) {
       addCategory(PowerSocketCategory(name: name));
