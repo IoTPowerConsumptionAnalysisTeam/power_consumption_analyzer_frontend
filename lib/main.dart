@@ -1,15 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:power_consumption_analyzer_frontend/login.dart';
+import 'package:power_consumption_analyzer_frontend/main_popup_menu_botton.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category_manager.dart';
+import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category_request_handler.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_manager.dart';
+import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_request_handler.dart';
+import 'package:power_consumption_analyzer_frontend/request_handler.dart';
+import 'package:power_consumption_analyzer_frontend/user_request_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 void main() {
   GetIt.I.registerSingleton<PowerSocketCategoryManager>(
       PowerSocketCategoryManager());
   GetIt.I.registerSingleton<PowerSocketManager>(PowerSocketManager());
+  GetIt.I.registerSingleton<RequestHandler>(RequestHandler());
+  GetIt.I.registerSingleton<UserRequestHandler>(UserRequestHandler());
+  GetIt.I.registerSingleton<PowerSocketRequestHandler>(
+      PowerSocketRequestHandler());
+  GetIt.I.registerSingleton<PowerSocketCategoryRequestHandler>(
+      PowerSocketCategoryRequestHandler());
+  // RequestHandler.I.baseUrl = 'http://localhost:3000/api';
   runApp(const MyApp());
 }
 
@@ -18,12 +32,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Power Consumption Analyzer',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<PowerSocketCategoryManager>(
+          create: (context) => GetIt.I<PowerSocketCategoryManager>(),
+        ),
+        ChangeNotifierProvider<PowerSocketManager>(
+          create: (context) => GetIt.I<PowerSocketManager>(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Power Consumption Analyzer',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const MyHomePage(title: 'Power Consumption Analyzer'),
       ),
-      home: const MyHomePage(title: 'Power Consumption Analyzer'),
     );
   }
 }
@@ -53,6 +77,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
+            context.watch<PowerSocketCategoryManager>().getAllCategory();
+            context.watch<PowerSocketManager>().getAllPowerSocket();
             return _buildPowerSocketList();
           } else {
             return const Center(
@@ -140,6 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<PowerSocketCategoryManager>().getAllCategory();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -154,6 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             },
           ),
+          MainPopupMenuButton(),
         ],
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
@@ -177,106 +205,151 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Add Power Socket'),
-                content: TextField(
-                  controller: TextEditingController(),
-                  decoration: const InputDecoration(hintText: 'Name'),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Add'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-        tooltip: 'Add Power Socket',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
   Widget _buildPowerSocketList() {
     return ListView.builder(
-      itemCount: PowerSocketCategoryManager.I.getAllCategory().length,
+      itemCount: PowerSocketCategoryManager.I.getAllCategory().length + 1,
       itemBuilder: (context, index) {
-        String categoryName =
-            PowerSocketCategoryManager.I.getAllCategoryList()[index].name;
-        return _buildExpansionTile(categoryName);
+        if (index < PowerSocketCategoryManager.I.getAllCategory().length) {
+          String categoryName =
+              PowerSocketCategoryManager.I.getAllCategoryList()[index].name;
+          List<PowerSocket> powerSockets =
+              PowerSocketManager.I.getPowerSocketsByCategory(categoryName);
+          return _buildExpansionTile(
+            categoryName: categoryName,
+            powerSockets: powerSockets,
+          );
+        } else {
+          List<PowerSocket> powerSockets = PowerSocketManager.I
+              .getPowerSocketsExceptCategories(PowerSocketCategoryManager.I
+                  .getAllCategoryList()
+                  .map((e) => e.name)
+                  .toList());
+          return _buildExpansionTile(
+            powerSockets: powerSockets,
+          );
+        }
       },
     );
   }
 
-  // Future<Widget> _buildList() async {
-  //   Map<String, PowerSocketCategory> powerSocketCategoryMap =
-  //       await PowerSocketCategoryManager.I.fetchAllCategory();
-  //   for (String categoryName in powerSocketCategoryMap.keys) {
-  //     await PowerSocketManager.I.fetchAllPowerSocket();
-  //     List<PowerSocket> powerSockets =
-  //         PowerSocketManager.I.getPowerSocketsByCategory(categoryName);
-  //     if (powerSockets.length > 0) {
-  //       return _buildExpansionTile(categoryName, powerSockets);
-  //     }
-  //   }
-  //   if (list.subMenu.isEmpty) {
-  //     return Builder(builder: (context) {
-  //       return ListTile(
-  //           // onTap: () => Navigator.push(
-  //           //     context,
-  //           //     MaterialPageRoute(
-  //           //         builder: (context) => SubCategory(list.name))),
-  //           leading: const SizedBox(),
-  //           title: Text(list.name));
-  //     });
-  //   }
-  //   return ExpansionTile(
-  //     leading: Icon(list.icon),
-  //     title: Text(
-  //       list.name,
-  //       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-  //     ),
-  //     children: list.subMenu.map(_buildList).toList(),
-  //   );
-  // }
-
-  ExpansionTile _buildExpansionTile(String categoryName) {
-    List<PowerSocket> powerSockets =
-        PowerSocketManager.I.getPowerSocketsByCategory(categoryName);
+  ExpansionTile _buildExpansionTile({
+    String? categoryName,
+    required List<PowerSocket> powerSockets,
+  }) {
     return ExpansionTile(
       controlAffinity: ListTileControlAffinity.leading,
       title: Text(
-        categoryName,
+        categoryName ?? 'Uncategorized',
         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
       children: powerSockets.map(_buildListTile).toList(),
     );
   }
 
-  ListTile _buildListTile(PowerSocket powerSocket) {
-    return ListTile(
-      // onTap: () => Navigator.push(
-      //     context,
-      //     MaterialPageRoute(
-      //         builder: (context) => PowerSocketDetail(powerSocket))),
+  Widget _buildListTile(PowerSocket powerSocket) {
+    return Slidable(
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            icon: Icons.edit,
+            label: 'Edit',
+            onPressed: (context) {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  TextEditingController powerSocketNameController =
+                      TextEditingController();
+                  TextEditingController powerSocketCategoryNameController =
+                      TextEditingController();
+                  powerSocketNameController.text = powerSocket.name ?? '';
+                  powerSocketCategoryNameController.text =
+                      powerSocket.category ?? '';
+                  return AlertDialog(
+                    title: const Text('Edit Power Socket'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: powerSocketNameController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Name',
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        TextField(
+                          controller: powerSocketCategoryNameController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Category',
+                          ),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          try {
+                            await PowerSocketRequestHandler.I.updatePowerSocket(
+                              userId: UserRequestHandler.I.userId,
+                              powerSocketId: powerSocket.id,
+                              name: powerSocketNameController.text,
+                              category: powerSocketCategoryNameController.text,
+                            );
+                          } catch (e) {
+                            debugPrint(e.toString());
+                          }
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Save'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+          SlidableAction(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: 'Delete',
+            onPressed: (context) async {
+              try {
+                await PowerSocketRequestHandler.I.deletePowerSocket(
+                  userId: UserRequestHandler.I.userId,
+                  powerSocketId: powerSocket.id,
+                );
+              } catch (e) {
+                debugPrint(e.toString());
+              }
+            },
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: const SizedBox(),
+        title: Text(powerSocket.name ?? 'Unknown'),
+        trailing: Text('0.00 W'),
+      ),
+    );
+    ListTile(
       leading: const SizedBox(),
       title: Text(powerSocket.name ?? 'Unknown'),
-      // trailing: Text(powerSocket.power.toString()),
       trailing: Text('0.00 W'),
     );
   }

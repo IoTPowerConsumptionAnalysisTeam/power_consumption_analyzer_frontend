@@ -4,7 +4,7 @@ class PowerSocket {
   final String userId;
   final String id;
   String? name;
-  PowerSocketCategory category;
+  String category;
 
   PowerSocket({
     required this.userId,

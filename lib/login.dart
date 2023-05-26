@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:power_consumption_analyzer_frontend/user_request_handler.dart';
 
 class Login extends StatelessWidget {
   Login({Key? key}) : super(key: key);
@@ -31,12 +32,23 @@ class Login extends StatelessWidget {
               height: 20,
             ),
             ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Welcome $username'),
-                  ),
-                );
+              onPressed: () async {
+                try {
+                  debugPrint('login...');
+                  await UserRequestHandler.I.register(username: username);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Welcome $username'),
+                    ),
+                  );
+                } catch (e) {
+                  debugPrint('failed login...');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to register'),
+                    ),
+                  );
+                }
                 Navigator.pop(context);
               },
               child: Text('Login'),
