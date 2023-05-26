@@ -30,19 +30,6 @@ class Login extends StatelessWidget {
             const SizedBox(
               height: 20,
             ),
-            // SizedBox(
-            //   width: 300,
-            //   child: TextField(
-            //     obscureText: true,
-            //     decoration: InputDecoration(
-            //       border: OutlineInputBorder(),
-            //       labelText: 'Password',
-            //     ),
-            //   ),
-            // ),
-            // SizedBox(
-            //   height: 20,
-            // ),
             ElevatedButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(

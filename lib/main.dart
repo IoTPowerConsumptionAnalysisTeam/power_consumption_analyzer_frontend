@@ -39,49 +39,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
-  List dataList = [
-    {
-      "name": "Living Room",
-      "icon": Icons.home,
-      "subMenu": [
-        {"name": "Orders"},
-        {"name": "Invoices"}
-      ]
-    },
-    {
-      "name": "Bedroom",
-      "icon": Icons.bed,
-      "subMenu": [
-        {
-          "name": "Promotions",
-          "subMenu": [
-            {"name": "Catalog Price Rule"},
-            {"name": "Cart Price Rules"}
-          ]
-        },
-        {
-          "name": "Communications",
-          "subMenu": [
-            {"name": "Newsletter Subscribers"}
-          ]
-        },
-        {
-          "name": "SEO & Search",
-          "subMenu": [
-            {"name": "Search Terms"},
-            {"name": "Search Synonyms"}
-          ]
-        },
-        {
-          "name": "User Content",
-          "subMenu": [
-            {"name": "All Reviews"},
-            {"name": "Pending Reviews"}
-          ]
-        }
-      ]
-    }
-  ];
 
   late List<Widget> _widgetOptions;
 
@@ -90,7 +47,10 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _widgetOptions = <Widget>[
       FutureBuilder(
-        future: PowerSocketCategoryManager.I.fetchAllCategory(),
+        future: Future.wait([
+          PowerSocketCategoryManager.I.fetchAllCategory(),
+          PowerSocketManager.I.fetchAllPowerSocket(),
+        ]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             return _buildPowerSocketList();
@@ -216,6 +176,38 @@ class _MyHomePageState extends State<MyHomePage> {
             backgroundColor: Colors.green,
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Add Power Socket'),
+                content: TextField(
+                  controller: TextEditingController(),
+                  decoration: const InputDecoration(hintText: 'Name'),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        tooltip: 'Add Power Socket',
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -16,26 +16,32 @@ class PowerSocketManager {
   Future<Map<String, PowerSocket>> fetchAllPowerSocket() async {
     _powerSocketMap = {
       'Living Room 1': PowerSocket(
+        userId: 'test',
         id: 'Living Room 1',
         category: PowerSocketCategoryManager.I.getCategoryByName('Living Room'),
       ),
       'Living Room 2': PowerSocket(
+        userId: 'test',
         id: 'Living Room 2',
         category: PowerSocketCategoryManager.I.getCategoryByName('Living Room'),
       ),
       'Bedroom 1': PowerSocket(
+        userId: 'test',
         id: 'Bedroom 1',
         category: PowerSocketCategoryManager.I.getCategoryByName('Bedroom'),
       ),
       'Bedroom 2': PowerSocket(
+        userId: 'test',
         id: 'Bedroom 2',
         category: PowerSocketCategoryManager.I.getCategoryByName('Bedroom'),
       ),
       'Kitchen 1': PowerSocket(
+        userId: 'test',
         id: 'Kitchen 1',
         category: PowerSocketCategoryManager.I.getCategoryByName('Kitchen'),
       ),
       'Kitchen 2': PowerSocket(
+        userId: 'test',
         id: 'Kitchen 2',
         category: PowerSocketCategoryManager.I.getCategoryByName('Kitchen'),
       ),
@@ -55,6 +61,7 @@ class PowerSocketManager {
   }) {
     if (_powerSocketMap[id] == null) {
       addPowerSocket(PowerSocket(
+        userId: 'test',
         id: id,
         name: name,
         category: PowerSocketCategoryManager.I.getCategoryByName(categoryName),
