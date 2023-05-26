@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category_request_handler.dart';
+import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_manager.dart';
 import 'package:power_consumption_analyzer_frontend/user_request_handler.dart';
 
 class PowerSocketCategoryManager with ChangeNotifier {
@@ -34,6 +35,8 @@ class PowerSocketCategoryManager with ChangeNotifier {
     }
 
     notifyListeners();
+    PowerSocketManager.I.fetchAllPowerSocket();
+    debugPrint('total category: ${_categoryMap.length}');
     return Map.unmodifiable(_categoryMap);
   }
 

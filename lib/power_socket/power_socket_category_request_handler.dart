@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:get_it/get_it.dart';
+import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category_manager.dart';
 import 'package:power_consumption_analyzer_frontend/request_handler.dart';
 
 class PowerSocketCategoryRequestHandler {
@@ -17,6 +18,7 @@ class PowerSocketCategoryRequestHandler {
         'new_category': categoryName,
       },
     );
+    PowerSocketCategoryManager.I.fetchAllCategory();
     return response;
   }
 
@@ -41,27 +43,26 @@ class PowerSocketCategoryRequestHandler {
 
   Future<http.Response> updateCategory({
     required String userId,
-    required String categoryId,
-    String? categoryName,
+    required String originalCategoryName,
+    required String newCategoryName,
   }) async {
     Map<String, dynamic> body = {};
-    if (categoryName != null) {
-      body['new_category'] = categoryName;
-    }
+    body['origin_name'] = originalCategoryName;
+    body['new_name'] = newCategoryName;
     final response = await RequestHandler.I.patch(
-      '/user/$userId/category/$categoryId',
+      '/user/$userId/category',
       body,
     );
+    PowerSocketCategoryManager.I.fetchAllCategory();
     return response;
   }
 
-  Future<http.Response> deleteCategory({
-    required String userId,
-    required String categoryId,
-  }) async {
+  Future<http.Response> deleteCategory(
+      {required String userId, required String categoryName}) async {
     final response = await RequestHandler.I.delete(
-      '/user/$userId/category/$categoryId',
+      '/user/$userId/category/$categoryName',
     );
+    PowerSocketCategoryManager.I.fetchAllCategory();
     return response;
   }
 
@@ -71,6 +72,7 @@ class PowerSocketCategoryRequestHandler {
     final response = await RequestHandler.I.delete(
       '/user/$userId/category',
     );
+    PowerSocketCategoryManager.I.fetchAllCategory();
     return response;
   }
 }

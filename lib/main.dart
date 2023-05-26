@@ -235,17 +235,96 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  ExpansionTile _buildExpansionTile({
+  Widget _buildExpansionTile({
     String? categoryName,
     required List<PowerSocket> powerSockets,
   }) {
-    return ExpansionTile(
-      controlAffinity: ListTileControlAffinity.leading,
-      title: Text(
-        categoryName ?? 'Uncategorized',
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return Slidable(
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            icon: Icons.edit,
+            label: 'Edit',
+            onPressed: (context) {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  TextEditingController powerSocketCategoryNameController =
+                      TextEditingController();
+                  powerSocketCategoryNameController.text = categoryName ?? '';
+                  return AlertDialog(
+                    title: const Text('Edit Power Socket'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: powerSocketCategoryNameController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'New Category Name',
+                          ),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          try {
+                            await PowerSocketCategoryRequestHandler.I
+                                .updateCategory(
+                              userId: UserRequestHandler.I.userId,
+                              originalCategoryName: categoryName ?? '',
+                              newCategoryName:
+                                  powerSocketCategoryNameController.text,
+                            );
+                          } catch (e) {
+                            debugPrint(e.toString());
+                          }
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Save'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+          SlidableAction(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: 'Delete',
+            onPressed: (context) async {
+              try {
+                await PowerSocketCategoryRequestHandler.I.deleteCategory(
+                  userId: UserRequestHandler.I.userId,
+                  categoryName: categoryName ?? 'uncategorized',
+                );
+              } catch (e) {
+                debugPrint(e.toString());
+              }
+            },
+          ),
+        ],
       ),
-      children: powerSockets.map(_buildListTile).toList(),
+      child: ExpansionTile(
+        controlAffinity: ListTileControlAffinity.leading,
+        title: Text(
+          categoryName ?? 'Uncategorized',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        children: powerSockets.map(_buildListTile).toList(),
+      ),
     );
   }
 

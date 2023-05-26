@@ -4,6 +4,7 @@ import 'package:power_consumption_analyzer_frontend/login.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category_manager.dart';
+import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category_request_handler.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_manager.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_request_handler.dart';
 import 'package:power_consumption_analyzer_frontend/request_handler.dart';
@@ -33,6 +34,7 @@ class _MainPopupMenuButtonState extends State<MainPopupMenuButton> {
           'set server url',
           'add power socket category',
           'add power socket',
+          'delete all power socket category',
           'delete all power socket',
         ].map((e) {
           return PopupMenuItem(
@@ -81,6 +83,43 @@ class _MainPopupMenuButtonState extends State<MainPopupMenuButton> {
             );
             break;
           case 'add power socket category':
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('Add Power Socket Category'),
+                  content: TextField(
+                    controller: _powerSocketCategoryNameController,
+                    decoration: const InputDecoration(
+                        hintText: 'Power Socket Category Name'),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        if (UserRequestHandler.I.userId == null) {
+                          return;
+                        }
+                        String userId = UserRequestHandler.I.userId;
+                        String categoryName =
+                            _powerSocketCategoryNameController.text;
+                        PowerSocketCategoryRequestHandler.I.registerCategory(
+                          userId: userId,
+                          categoryName: categoryName,
+                        );
+                      },
+                      child: const Text('Add'),
+                    ),
+                  ],
+                );
+              },
+            );
             break;
           case 'add power socket':
             showDialog(
@@ -127,6 +166,37 @@ class _MainPopupMenuButtonState extends State<MainPopupMenuButton> {
                         );
                       },
                       child: const Text('Add'),
+                    ),
+                  ],
+                );
+              },
+            );
+            break;
+          case 'delete all power socket category':
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('Delete All Power Socket Category'),
+                  content: const Text('Are you sure?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        if (UserRequestHandler.I.userId == null) {
+                          return;
+                        }
+                        String userId = UserRequestHandler.I.userId;
+                        PowerSocketCategoryRequestHandler.I
+                            .deleteAllCategory(userId: userId);
+                      },
+                      child: const Text('Delete'),
                     ),
                   ],
                 );

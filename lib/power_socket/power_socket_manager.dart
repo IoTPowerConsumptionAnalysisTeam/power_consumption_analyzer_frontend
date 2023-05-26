@@ -41,7 +41,6 @@ class PowerSocketManager with ChangeNotifier {
       debugPrint(e.toString());
     }
 
-    debugPrint('fetch all power socket done');
     debugPrint('total power socket: ${_powerSocketMap.length}');
     notifyListeners();
     return Map.unmodifiable(_powerSocketMap);
