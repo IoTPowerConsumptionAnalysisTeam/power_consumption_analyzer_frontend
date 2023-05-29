@@ -36,6 +36,8 @@ class _MainPopupMenuButtonState extends State<MainPopupMenuButton> {
           'add power socket',
           'delete all power socket category',
           'delete all power socket',
+          'get consumption between time',
+          'get bill between time',
         ].map((e) {
           return PopupMenuItem(
             value: e,
@@ -233,6 +235,128 @@ class _MainPopupMenuButtonState extends State<MainPopupMenuButton> {
                 );
               },
             );
+            break;
+          case 'get consumption between time':
+            showDialog(
+                context: context,
+                builder: (context) {
+                  TextEditingController startTimeController =
+                      TextEditingController();
+                  TextEditingController endTimeController =
+                      TextEditingController();
+                  startTimeController.text = '2010-01-01 00:00:00';
+                  endTimeController.text = '2030-01-01 00:00:00';
+                  return AlertDialog(
+                    title: const Text('Get Consumption Between Time'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: startTimeController,
+                          decoration: const InputDecoration(
+                              hintText: 'Start (yyyy-mm-dd hh:mm:ss)'),
+                        ),
+                        TextField(
+                          controller: endTimeController,
+                          decoration: const InputDecoration(
+                              hintText: 'End (yyyy-mm-dd hh:mm:ss)'),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          if (UserRequestHandler.I.userId == null) {
+                            return;
+                          }
+                          String userId = UserRequestHandler.I.userId;
+                          String startTime = startTimeController.text;
+                          String endTime = endTimeController.text;
+                          String consuption = await PowerSocketManager.I
+                              .getTotalConsumptionBetweenTime(
+                            userId: userId,
+                            startTime: startTime,
+                            endTime: endTime,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Consumption: $consuption'),
+                            ),
+                          );
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Get Consumption'),
+                      ),
+                    ],
+                  );
+                });
+            break;
+          case 'get bill between time':
+            showDialog(
+                context: context,
+                builder: (context) {
+                  TextEditingController startTimeController =
+                      TextEditingController();
+                  TextEditingController endTimeController =
+                      TextEditingController();
+                  startTimeController.text = '2010-01-01 00:00:00';
+                  endTimeController.text = '2030-01-01 00:00:00';
+                  return AlertDialog(
+                    title: const Text('Get Bill Between Time'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: startTimeController,
+                          decoration: const InputDecoration(
+                              hintText: 'Start (yyyy-mm-dd hh:mm:ss)'),
+                        ),
+                        TextField(
+                          controller: endTimeController,
+                          decoration: const InputDecoration(
+                              hintText: 'End (yyyy-mm-dd hh:mm:ss)'),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          if (UserRequestHandler.I.userId == null) {
+                            return;
+                          }
+                          String userId = UserRequestHandler.I.userId;
+                          String startTime = startTimeController.text;
+                          String endTime = endTimeController.text;
+                          String bill = await PowerSocketManager.I
+                              .getTotalBillBetweenTime(
+                            userId: userId,
+                            startTime: startTime,
+                            endTime: endTime,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Bill: $bill'),
+                            ),
+                          );
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Get Bill'),
+                      ),
+                    ],
+                  );
+                });
         }
       },
     );

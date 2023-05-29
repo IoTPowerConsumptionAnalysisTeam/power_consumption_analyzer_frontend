@@ -84,4 +84,26 @@ class PowerSocketRequestHandler {
     PowerSocketManager.I.fetchAllPowerSocket();
     return response;
   }
+
+  Future<http.Response> getTotalConsumptionBetweenTime({
+    required String userId,
+    required DateTime startTime,
+    required DateTime endTime,
+  }) async {
+    final response = await RequestHandler.I.get(
+      '/user/$userId/consumption/start/${startTime.millisecondsSinceEpoch / 1000}/end/${endTime.millisecondsSinceEpoch / 1000}',
+    );
+    return response;
+  }
+
+  Future<http.Response> getTotalBillBetweenTime({
+    required String userId,
+    required DateTime startTime,
+    required DateTime endTime,
+  }) async {
+    final response = await RequestHandler.I.get(
+      '/user/$userId/bill/start/${startTime.millisecondsSinceEpoch / 1000}/end/${endTime.millisecondsSinceEpoch / 1000}',
+    );
+    return response;
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category.dart';
 import 'package:power_consumption_analyzer_frontend/power_socket/power_socket_category_manager.dart';
@@ -83,5 +84,33 @@ class PowerSocketManager with ChangeNotifier {
 
   void addPowerSocket(PowerSocket powerSocket) {
     _powerSocketMap[powerSocket.id] = powerSocket;
+  }
+
+  Future<String> getTotalConsumptionBetweenTime(
+      {required String userId,
+      required String startTime,
+      required String endTime}) async {
+    Response totalConsumptionResponse =
+        await PowerSocketRequestHandler.I.getTotalConsumptionBetweenTime(
+      userId: userId,
+      startTime: DateTime.parse(startTime),
+      endTime: DateTime.parse(endTime),
+    );
+    String totalConsumptionString = totalConsumptionResponse.body;
+    return totalConsumptionString;
+  }
+
+  Future<String> getTotalBillBetweenTime(
+      {required String userId,
+      required String startTime,
+      required String endTime}) async {
+    Response totalBillResponse =
+        await PowerSocketRequestHandler.I.getTotalBillBetweenTime(
+      userId: userId,
+      startTime: DateTime.parse(startTime),
+      endTime: DateTime.parse(endTime),
+    );
+    String totalBillString = totalBillResponse.body;
+    return totalBillString;
   }
 }
