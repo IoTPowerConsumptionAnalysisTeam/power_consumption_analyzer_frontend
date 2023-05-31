@@ -12,6 +12,7 @@ import 'package:power_consumption_analyzer_frontend/request_handler.dart';
 import 'package:power_consumption_analyzer_frontend/user_request_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:power_consumption_analyzer_frontend/stats_page.dart';
 
 void main() {
   GetIt.I.registerSingleton<PowerSocketCategoryManager>(
@@ -63,6 +64,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
+  bool _showBill = false;
 
   late List<Widget> _widgetOptions;
 
@@ -87,76 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         },
       ),
-      Container(
-        padding: const EdgeInsets.all(30.0),
-        child: Column(
-          children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(
-                  'Total',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  '0.00',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(
-                  '本月',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  '0.00',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(
-                  '本月預估',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  '0.00',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+      StatsPage(),
     ];
     // dataList.forEach((element) {
     //   Menu menu = Menu.fromJson(element);
@@ -171,6 +104,22 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.electrical_services),
+            onPressed: () {
+              setState(() {
+                _showBill = !_showBill;
+              });
+              PowerSocketManager.I.fetchAllPowerSocket();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () async {
+              await PowerSocketCategoryManager.I.fetchAllCategory();
+              await PowerSocketManager.I.fetchAllPowerSocket();
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.perm_identity),
             onPressed: () {
@@ -319,6 +268,21 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       child: ExpansionTile(
         controlAffinity: ListTileControlAffinity.leading,
+        trailing: _showBill
+            ? Text(
+                '${powerSockets.fold<double>(0, (previousValue, element) => previousValue + element.totalBill).toStringAsFixed(2)} NT',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            : Text(
+                '${powerSockets.fold<double>(0, (previousValue, element) => previousValue + element.totalPowerConsumption).toStringAsFixed(2)} kWh',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
         title: Text(
           categoryName ?? 'Uncategorized',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -423,7 +387,21 @@ class _MyHomePageState extends State<MyHomePage> {
       child: ListTile(
         leading: const SizedBox(),
         title: Text(powerSocket.name ?? 'Unknown'),
-        trailing: Text('0.00 W'),
+        trailing: _showBill
+            ? Text(
+                '${powerSocket.totalBill.toStringAsFixed(2)} NT',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            : Text(
+                '${powerSocket.totalPowerConsumption.toStringAsFixed(2)} kWh',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
     ListTile(

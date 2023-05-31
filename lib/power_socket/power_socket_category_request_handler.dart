@@ -41,6 +41,24 @@ class PowerSocketCategoryRequestHandler {
     return response;
   }
 
+  Future<http.Response> getCategoryTotalConsumption({
+    required String userId,
+  }) async {
+    final response = await RequestHandler.I.get(
+      '/user/$userId/category/consumption/start/0/end/${DateTime.now().millisecondsSinceEpoch ~/ 1000}',
+    );
+    return response;
+  }
+
+  Future<http.Response> getCategoryTotalBill({
+    required String userId,
+  }) async {
+    final response = await RequestHandler.I.get(
+      '/user/$userId/category/bill/start/0/end/${DateTime.now().millisecondsSinceEpoch ~/ 1000}',
+    );
+    return response;
+  }
+
   Future<http.Response> updateCategory({
     required String userId,
     required String originalCategoryName,

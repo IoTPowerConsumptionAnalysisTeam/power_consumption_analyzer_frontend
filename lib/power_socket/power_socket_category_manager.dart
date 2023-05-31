@@ -21,12 +21,31 @@ class PowerSocketCategoryManager with ChangeNotifier {
       final response = await PowerSocketCategoryRequestHandler.I.getAllCategory(
         userId: userId,
       );
+      final consumptionResponse =
+          await PowerSocketCategoryRequestHandler.I.getCategoryTotalConsumption(
+        userId: userId,
+      );
+      final billResponse =
+          await PowerSocketCategoryRequestHandler.I.getCategoryTotalBill(
+        userId: userId,
+      );
+      double consumption = 0;
+      double bill = 0;
+      try {
+        consumption = double.parse(consumptionResponse.body);
+        bill = double.parse(billResponse.body);
+      } catch (e) {
+        debugPrint(e.toString());
+      }
       List<dynamic> body = jsonDecode(response.body);
+      debugPrint("body: $body");
       _categoryMap.clear();
       for (String categoryName in body) {
         PowerSocketCategory category = PowerSocketCategory(
           userId: userId,
           name: categoryName,
+          totalPowerConsumption: consumption,
+          totalBill: bill,
         );
         _categoryMap[categoryName] = category;
       }
@@ -54,6 +73,8 @@ class PowerSocketCategoryManager with ChangeNotifier {
       addCategory(PowerSocketCategory(
         userId: userId,
         name: name,
+        totalPowerConsumption: 0,
+        totalBill: 0,
       ));
     }
     return _categoryMap[name]!;

@@ -43,6 +43,26 @@ class PowerSocketRequestHandler {
     return response;
   }
 
+  Future<http.Response> getPowerSocketTotalConsumption({
+    required String userId,
+    required String powerSocketId,
+  }) async {
+    final response = await RequestHandler.I.get(
+      '/user/$userId/power_socket/$powerSocketId/consumption/start/0/end/${DateTime.now().millisecondsSinceEpoch ~/ 1000}',
+    );
+    return response;
+  }
+
+  Future<http.Response> getPowerSocketTotalBill({
+    required String userId,
+    required String powerSocketId,
+  }) async {
+    final response = await RequestHandler.I.get(
+      '/user/$userId/power_socket/$powerSocketId/bill/start/0/end/${DateTime.now().millisecondsSinceEpoch ~/ 1000}',
+    );
+    return response;
+  }
+
   Future<http.Response> updatePowerSocket({
     required String userId,
     required String powerSocketId,
@@ -91,7 +111,7 @@ class PowerSocketRequestHandler {
     required DateTime endTime,
   }) async {
     final response = await RequestHandler.I.get(
-      '/user/$userId/consumption/start/${startTime.millisecondsSinceEpoch / 1000}/end/${endTime.millisecondsSinceEpoch / 1000}',
+      '/user/$userId/consumption/start/${startTime.millisecondsSinceEpoch ~/ 1000}/end/${endTime.millisecondsSinceEpoch ~/ 1000}',
     );
     return response;
   }
@@ -102,7 +122,7 @@ class PowerSocketRequestHandler {
     required DateTime endTime,
   }) async {
     final response = await RequestHandler.I.get(
-      '/user/$userId/bill/start/${startTime.millisecondsSinceEpoch / 1000}/end/${endTime.millisecondsSinceEpoch / 1000}',
+      '/user/$userId/bill/start/${startTime.millisecondsSinceEpoch ~/ 1000}/end/${endTime.millisecondsSinceEpoch ~/ 1000}',
     );
     return response;
   }

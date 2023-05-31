@@ -29,12 +29,24 @@ class PowerSocketManager with ChangeNotifier {
           userId: userId,
           powerSocketId: powerSocketId,
         );
+        final consumptionResponse =
+            await PowerSocketRequestHandler.I.getPowerSocketTotalConsumption(
+          userId: userId,
+          powerSocketId: powerSocketId,
+        );
+        final billResponse =
+            await PowerSocketRequestHandler.I.getPowerSocketTotalBill(
+          userId: userId,
+          powerSocketId: powerSocketId,
+        );
         Map<String, dynamic> powerSocketJson = jsonDecode(response.body);
         PowerSocket powerSocket = PowerSocket(
           userId: userId,
           id: powerSocketId,
           name: powerSocketJson['name'],
           category: powerSocketJson['category'],
+          totalPowerConsumption: double.parse(consumptionResponse.body),
+          totalBill: double.parse(billResponse.body),
         );
         _powerSocketMap[powerSocketId] = powerSocket;
       }
@@ -64,6 +76,8 @@ class PowerSocketManager with ChangeNotifier {
         id: id,
         name: name,
         category: categoryName,
+        totalPowerConsumption: 0,
+        totalBill: 0,
       ));
     }
     return _powerSocketMap[id]!;
